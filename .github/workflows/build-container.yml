@@ -1,0 +1,87 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [main]
+
+env:
+  IMAGE_NAME: pollstar-votes-api
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0.9.7
+        with:
+          versionSpec: "5.x"
+      - name: Determine Version
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v0.9.7
+        with:
+          useConfigFile: true
+
+      - name: "Push to Azure Container Registry"
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+      - name: Build & Push
+        working-directory: src
+        run: |
+          docker build . --file Dockerfile --tag ${{ secrets.ACR_LOGIN_SERVER }}/$IMAGE_NAME:${{ steps.gitversion.outputs.MajorMinorPatch }}
+          docker build . --file Dockerfile --tag ${{ secrets.ACR_LOGIN_SERVER }}/$IMAGE_NAME:latest
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/$IMAGE_NAME:${{ steps.gitversion.outputs.MajorMinorPatch }}
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/$IMAGE_NAME:latest
+
+  publish-bicep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Compile infrastructure
+        uses: Azure/cli@1.0.4
+        with:
+          inlineScript: az bicep build --file ./infrastructure/main.bicep
+      - name: Publish Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: bicep-templates
+          path: infrastructure/*.json
+
+  infrastructure-incremental-test:
+    needs: [build, publish-bicep]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Download Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: bicep-templates
+          path: ./infrastructure
+      - name: Azure Login
+        uses: azure/login@v1.4.0
+        with:
+          creds: ${{ secrets.AZURE_TEST }}
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0.9.7
+        with:
+          versionSpec: "5.x"
+      - name: Determine Version
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v0.9.7
+        with:
+          useConfigFile: true
+      - name: Deploy Infrastructure
+        id: arm
+        uses: Azure/cli@1.0.4
+        with:
+          inlineScript: az deployment sub create --name pollstar-sessions-api  --location northeurope --template-file ./infrastructure/main.json --parameters ./infrastructure/params.test.json --parameters containerVersion=${{ steps.gitversion.outputs.MajorMinorPatch }}
