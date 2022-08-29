@@ -84,4 +84,4 @@ jobs:
         id: arm
         uses: Azure/cli@1.0.4
         with:
-          inlineScript: az deployment sub create --name pollstar-sessions-api  --location northeurope --template-file ./infrastructure/main.json --parameters ./infrastructure/params.test.json --parameters containerVersion=${{ steps.gitversion.outputs.MajorMinorPatch }}
+          inlineScript: az deployment sub create --name pollstar-votes-api  --location northeurope --template-file ./infrastructure/main.json --parameters ./infrastructure/params.test.json --parameters containerVersion=${{ steps.gitversion.outputs.MajorMinorPatch }}
