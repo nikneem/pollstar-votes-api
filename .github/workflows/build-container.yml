@@ -44,10 +44,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Compile infrastructure
-        uses: Azure/cli@1.0.4
-        with:
-          inlineScript: az bicep build --file ./infrastructure/main.bicep
+      - name: Build & Push
+        working-directory: infrastructure
+        run: |
+          az bicep build --file main.bicep
       - name: Publish Artifact
         uses: actions/upload-artifact@v2
         with:

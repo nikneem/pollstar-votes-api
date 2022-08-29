@@ -19,7 +19,7 @@ var applicationInsightsResourceName = '${integrationResourceGroupName}-ai'
 var apiResourceGroupName = toLower('${systemName}-${environmentName}-${locationAbbreviation}')
 
 var storageAccountTables = [
-  'sessions'
+  'votes'
 ]
 
 resource apiResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
