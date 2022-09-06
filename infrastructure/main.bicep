@@ -15,6 +15,7 @@ param containerVersion string
 var integrationResourceGroupName = toLower('pollstar-int-${environmentName}-${locationAbbreviation}')
 var containerAppEnvironmentName = '${integrationResourceGroupName}-env'
 var applicationInsightsResourceName = '${integrationResourceGroupName}-ai'
+var webPubSubResourceName = '${integrationResourceGroupName}-pubsub'
 
 var apiResourceGroupName = toLower('${systemName}-${environmentName}-${locationAbbreviation}')
 
@@ -38,5 +39,6 @@ module resourcesModule 'resources.bicep' = {
     integrationResourceGroupName: integrationResourceGroupName
     containerAppEnvironmentResourceName: containerAppEnvironmentName
     applicationInsightsResourceName: applicationInsightsResourceName
+    webPubSubResourceName: webPubSubResourceName
   }
 }

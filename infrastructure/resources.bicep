@@ -6,6 +6,10 @@ param containerVersion string
 param integrationResourceGroupName string
 param containerAppEnvironmentResourceName string
 param applicationInsightsResourceName string
+param webPubSubResourceName string
+
+param containerPort int = 80
+param containerAppName string = 'pollstar-votes-api'
 
 resource containerAppEnvironments 'Microsoft.App/managedEnvironments@2022-03-01' existing = {
   name: containerAppEnvironmentResourceName
@@ -13,6 +17,10 @@ resource containerAppEnvironments 'Microsoft.App/managedEnvironments@2022-03-01'
 }
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing = {
   name: applicationInsightsResourceName
+  scope: resourceGroup(integrationResourceGroupName)
+}
+resource webPubSub 'Microsoft.SignalRService/webPubSub@2021-10-01' existing = {
+  name: webPubSubResourceName
   scope: resourceGroup(integrationResourceGroupName)
 }
 
@@ -53,9 +61,13 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
           name: 'application-insights-connectionstring'
           value: applicationInsights.properties.ConnectionString
         }
+        {
+          name: 'web-pubsub-connectionstring'
+          value: webPubSub.listKeys().primaryConnectionString
+        }
       ]
       ingress: {
-        external: true
+        external: false
         targetPort: 80
         transport: 'auto'
         allowInsecure: false
@@ -66,12 +78,17 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
           }
         ]
       }
+      dapr: {
+        enabled: true
+        appPort: containerPort
+        appId: containerAppName
+      }
     }
     template: {
       containers: [
         {
-          image: 'pollstarinttestneuacr.azurecr.io/pollstar-votes-api:${containerVersion}'
-          name: 'pollstar-votes-api'
+          image: 'pollstarinttestneuacr.azurecr.io/${containerAppName}:${containerVersion}'
+          name: containerAppName
           resources: {
             cpu: json('0.25')
             memory: '0.5Gi'
@@ -86,7 +103,15 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
               secretRef: 'storage-account-secret'
             }
             {
-              name: 'APPLICATION_INSIGHTS_CONNECTIONSTRING'
+              name: 'Azure__WebPubSub'
+              secretRef: 'web-pubsub-connectionstring'
+            }
+            {
+              name: 'Azure__PollStarHub'
+              value: 'pollstar'
+            }
+            {
+              name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
               secretRef: 'application-insights-connectionstring'
             }
           ]
@@ -94,8 +119,8 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
         }
       ]
       scale: {
-        minReplicas: 2
-        maxReplicas: 10
+        minReplicas: 0
+        maxReplicas: 6
       }
     }
   }

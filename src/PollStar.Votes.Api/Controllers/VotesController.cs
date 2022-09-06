@@ -2,7 +2,7 @@
 using PollStar.Votes.Abstractions.DataTransferObjects;
 using PollStar.Votes.Abstractions.Services;
 
-namespace PollStar.API.Controllers
+namespace PollStar.Votes.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
