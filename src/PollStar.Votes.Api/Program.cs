@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using PollStar.Core.Configuration;
+using PollStar.Core.HealthChecks;
 using PollStar.Votes;
 
 const string defaultCorsPolicyName = "default_cors";
@@ -62,7 +64,10 @@ app.UseRouting();
 app.UseAuthorization();
 app.UseEndpoints(ep =>
 {
-    ep.MapHealthChecks("/health");
+    ep.MapHealthChecks("/health", new HealthCheckOptions
+    {
+        ResponseWriter = HealthCheckExtensions.WriteResponse
+    });
     ep.MapControllers();
 });
 
