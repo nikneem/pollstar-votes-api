@@ -89,7 +89,7 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
         allowInsecure: false
         traffic: [
           {
-            weight: 0
+            weight: 100
             label: containerVersion
             revisionName: containerVersion
           }
