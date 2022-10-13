@@ -71,7 +71,7 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
     managedEnvironmentId: containerAppEnvironments.id
 
     configuration: {
-      activeRevisionsMode: 'Single'
+      activeRevisionsMode: 'Multiple'
       secrets: [
         {
           name: 'application-insights-connectionstring'
@@ -89,8 +89,10 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
         allowInsecure: false
         traffic: [
           {
-            weight: 100
+            weight: 0
             latestRevision: true
+            label: containerVersion
+            revisionName: containerVersion
           }
         ]
       }
