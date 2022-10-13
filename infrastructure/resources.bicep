@@ -1,6 +1,7 @@
 param defaultResourceName string
 param location string
 param storageAccountTables array
+param storageQueues array
 param containerVersion string
 
 param integrationResourceGroupName string
@@ -39,6 +40,16 @@ resource storageAccountTableService 'Microsoft.Storage/storageAccounts/tableServ
 resource storageAccountTable 'Microsoft.Storage/storageAccounts/tableServices/tables@2021-09-01' = [for table in storageAccountTables: {
   name: table
   parent: storageAccountTableService
+}]
+
+resource storageAccountQueueService 'Microsoft.Storage/storageAccounts/queueServices@2022-05-01' = {
+  name: 'default'
+  parent: storageAccount
+}
+
+resource storageAccountQueue 'Microsoft.Storage/storageAccounts/queueServices/queues@2021-09-01' = [for queue in storageQueues: {
+  name: queue
+  parent: storageAccountQueueService
 }]
 
 resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
