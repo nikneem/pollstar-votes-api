@@ -90,7 +90,6 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
         traffic: [
           {
             weight: 0
-            latestRevision: true
             label: containerVersion
             revisionName: containerVersion
           }
