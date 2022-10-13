@@ -155,7 +155,7 @@ resource allowQueueContribution 'Microsoft.Authorization/roleAssignments@2022-04
   properties: {
     description: 'Configuration access for the development team'
     principalId: apiContainerApp.identity.principalId
-    principalType: 'Group'
+    principalType: 'ServicePrincipal'
     roleDefinitionId: queueContributorRole.id
   }
 }
@@ -164,7 +164,7 @@ resource allowTableStorageContribution 'Microsoft.Authorization/roleAssignments@
   properties: {
     description: 'Configuration access for the development team'
     principalId: apiContainerApp.identity.principalId
-    principalType: 'Group'
+    principalType: 'ServicePrincipal'
     roleDefinitionId: tableDataContributorRole.id
   }
 }
