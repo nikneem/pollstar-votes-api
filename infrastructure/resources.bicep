@@ -1,7 +1,7 @@
 param defaultResourceName string
 param location string
 param storageAccountTables array
-param storageQueues array
+param storageAccountQueues array
 param containerVersion string
 
 param integrationResourceGroupName string
@@ -11,6 +11,15 @@ param webPubSubResourceName string
 
 param containerPort int = 80
 param containerAppName string = 'pollstar-votes-api'
+
+resource queueContributorRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
+  scope: resourceGroup()
+  name: '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
+}
+resource tableDataContributorRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
+  scope: resourceGroup()
+  name: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
+}
 
 resource containerAppEnvironments 'Microsoft.App/managedEnvironments@2022-03-01' existing = {
   name: containerAppEnvironmentResourceName
@@ -47,7 +56,7 @@ resource storageAccountQueueService 'Microsoft.Storage/storageAccounts/queueServ
   parent: storageAccount
 }
 
-resource storageAccountQueue 'Microsoft.Storage/storageAccounts/queueServices/queues@2021-09-01' = [for queue in storageQueues: {
+resource storageAccountQueue 'Microsoft.Storage/storageAccounts/queueServices/queues@2021-09-01' = [for queue in storageAccountQueues: {
   name: queue
   parent: storageAccountQueueService
 }]
@@ -64,10 +73,6 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
     configuration: {
       activeRevisionsMode: 'Single'
       secrets: [
-        {
-          name: 'storage-account-secret'
-          value: listKeys(storageAccount.id, storageAccount.apiVersion).keys[0].value
-        }
         {
           name: 'application-insights-connectionstring'
           value: applicationInsights.properties.ConnectionString
@@ -110,10 +115,6 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
               value: storageAccount.name
             }
             {
-              name: 'Azure__StorageKey'
-              secretRef: 'storage-account-secret'
-            }
-            {
               name: 'Azure__WebPubSub'
               secretRef: 'web-pubsub-connectionstring'
             }
@@ -144,5 +145,24 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
         ]
       }
     }
+  }
+}
+
+resource allowQueueContribution 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid('${apiContainerApp.name}-${queueContributorRole.id}')
+  properties: {
+    description: 'Configuration access for the development team'
+    principalId: apiContainerApp.identity.principalId
+    principalType: 'Group'
+    roleDefinitionId: queueContributorRole.id
+  }
+}
+resource allowTableStorageContribution 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid('${apiContainerApp.name}-${tableDataContributorRole.id}')
+  properties: {
+    description: 'Configuration access for the development team'
+    principalId: apiContainerApp.identity.principalId
+    principalType: 'Group'
+    roleDefinitionId: tableDataContributorRole.id
   }
 }

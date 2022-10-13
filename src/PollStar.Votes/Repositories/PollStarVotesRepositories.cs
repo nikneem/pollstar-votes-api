@@ -1,5 +1,7 @@
 ﻿using Azure;
 using Azure.Data.Tables;
+using Azure.Identity;
+using Azure.Storage.Queues;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PollStar.Core;
@@ -15,7 +17,9 @@ public class PollStarVotesRepositories : IPollStarVotesRepositories
     private readonly ILogger<PollStarVotesRepositories> _logger;
 
     private TableClient _tableClient;
+    private QueueClient _queueClient;
     private const string TableName = "votes";
+    private const string QueueName = "votes";
 
     public async Task<VotesDto> GetPollVostesAsync(Guid pollId)
     {
@@ -103,13 +107,15 @@ public class PollStarVotesRepositories : IPollStarVotesRepositories
     public PollStarVotesRepositories(IOptions<AzureConfiguration> options, ILogger<PollStarVotesRepositories> logger)
     {
         _logger = logger;
+
         var accountName = options.Value.StorageAccount;
-        var accountKey = options.Value.StorageKey;
-        var storageUri = new Uri($"https://{accountName}.table.core.windows.net");
-        _tableClient = new TableClient(
-            storageUri,
-            TableName,
-            new TableSharedKeyCredential(accountName, accountKey));
+
+        var managedIdentity = new DefaultAzureCredential();
+        var tableStorageUri = new Uri($"https://{accountName}.table.core.windows.net");
+        var queueStorageUri = new Uri($"https://{accountName}.queue.core.windows.net/{QueueName}");
+
+        _queueClient = new QueueClient(queueStorageUri,  managedIdentity);
+        _tableClient = new TableClient(tableStorageUri, TableName, managedIdentity);
     }
 
 }

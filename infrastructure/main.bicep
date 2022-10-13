@@ -22,6 +22,9 @@ var apiResourceGroupName = toLower('${systemName}-${environmentName}-${locationA
 var storageAccountTables = [
   'votes'
 ]
+var storageAccountQueues = [
+  'votes'
+]
 
 resource apiResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: apiResourceGroupName
@@ -35,6 +38,7 @@ module resourcesModule 'resources.bicep' = {
     defaultResourceName: apiResourceGroupName
     location: location
     storageAccountTables: storageAccountTables
+    storageAccountQueues: storageAccountQueues
     containerVersion: containerVersion
     integrationResourceGroupName: integrationResourceGroupName
     containerAppEnvironmentResourceName: containerAppEnvironmentName
