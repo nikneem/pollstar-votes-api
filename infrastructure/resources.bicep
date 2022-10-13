@@ -71,7 +71,7 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
     managedEnvironmentId: containerAppEnvironments.id
 
     configuration: {
-      activeRevisionsMode: 'Multiple'
+      activeRevisionsMode: 'Single'
       secrets: [
         {
           name: 'application-insights-connectionstring'
