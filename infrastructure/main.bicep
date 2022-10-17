@@ -17,14 +17,11 @@ var integrationResourceGroupName = toLower('pollstar-int-${environmentName}-${lo
 var containerAppEnvironmentName = '${integrationResourceGroupName}-env'
 var applicationInsightsResourceName = '${integrationResourceGroupName}-ai'
 var webPubSubResourceName = '${integrationResourceGroupName}-pubsub'
-var serviceBusResourceName = '${integrationResourceGroupName}-sb'
+var serviceBusResourceName = '${integrationResourceGroupName}-bus'
 
 var apiResourceGroupName = toLower('${systemName}-${environmentName}-${locationAbbreviation}')
 
 var storageAccountTables = [
-  'votes'
-]
-var storageAccountQueues = [
   'votes'
 ]
 
@@ -40,7 +37,6 @@ module resourcesModule 'resources.bicep' = {
     defaultResourceName: apiResourceGroupName
     location: location
     storageAccountTables: storageAccountTables
-    storageAccountQueues: storageAccountQueues
     containerVersion: containerVersion
     integrationResourceGroupName: integrationResourceGroupName
     containerAppEnvironmentResourceName: containerAppEnvironmentName

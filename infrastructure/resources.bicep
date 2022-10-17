@@ -1,7 +1,6 @@
 param defaultResourceName string
 param location string
 param storageAccountTables array
-param storageAccountQueues array
 param containerVersion string
 
 param integrationResourceGroupName string
@@ -14,10 +13,6 @@ param queues array
 param containerPort int = 80
 param containerAppName string = 'pollstar-votes-api'
 
-resource queueContributorRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
-  scope: resourceGroup()
-  name: '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
-}
 resource tableDataContributorRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
   scope: resourceGroup()
   name: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
@@ -52,26 +47,6 @@ resource storageAccountTable 'Microsoft.Storage/storageAccounts/tableServices/ta
   name: table
   parent: storageAccountTableService
 }]
-
-resource storageAccountQueueService 'Microsoft.Storage/storageAccounts/queueServices@2022-05-01' = {
-  name: 'default'
-  parent: storageAccount
-}
-
-resource storageAccountQueue 'Microsoft.Storage/storageAccounts/queueServices/queues@2021-09-01' = [for queue in storageAccountQueues: {
-  name: queue
-  parent: storageAccountQueueService
-}]
-
-module queuesModule 'ServiceBus/namespaces/queues.bicep' = {
-  name: 'serviceBusQueuesModule'
-  scope: resourceGroup(integrationResourceGroupName)
-  params: {
-    serviceBusName: serviceBusResourceName
-    location: location
-    queues: queues
-  }
-}
 
 resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
   name: '${defaultResourceName}-aca'
@@ -161,15 +136,18 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
   }
 }
 
-resource allowQueueContribution 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid('${apiContainerApp.name}-${queueContributorRole.id}')
-  properties: {
-    description: 'Configuration access for the development team'
+module queuesModule 'ServiceBus/namespaces/queues.bicep' = {
+  name: 'serviceBusQueuesModule'
+  scope: resourceGroup(integrationResourceGroupName)
+  params: {
+    serviceBusName: serviceBusResourceName
+    location: location
+    queues: queues
     principalId: apiContainerApp.identity.principalId
-    principalType: 'ServicePrincipal'
-    roleDefinitionId: queueContributorRole.id
+    allowSending: true
   }
 }
+
 resource allowTableStorageContribution 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid('${apiContainerApp.name}-${tableDataContributorRole.id}')
   properties: {
