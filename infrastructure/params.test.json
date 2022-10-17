@@ -10,6 +10,9 @@
     },
     "locationAbbreviation": {
       "value": "neu"
+    },
+    "queues": {
+      "value": ["votes"]
     }
   }
 }

@@ -8,6 +8,8 @@ param integrationResourceGroupName string
 param containerAppEnvironmentResourceName string
 param applicationInsightsResourceName string
 param webPubSubResourceName string
+param serviceBusResourceName string
+param queues array
 
 param containerPort int = 80
 param containerAppName string = 'pollstar-votes-api'
@@ -60,6 +62,16 @@ resource storageAccountQueue 'Microsoft.Storage/storageAccounts/queueServices/qu
   name: queue
   parent: storageAccountQueueService
 }]
+
+module queuesModule 'ServiceBus/namespaces/queues.bicep' = {
+  name: 'serviceBusQueuesModule'
+  scope: resourceGroup(integrationResourceGroupName)
+  params: {
+    serviceBusName: serviceBusResourceName
+    location: location
+    queues: queues
+  }
+}
 
 resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
   name: '${defaultResourceName}-aca'
