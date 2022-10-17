@@ -1,9 +1,9 @@
 ﻿using Azure.Core;
 using Azure.Messaging.WebPubSub;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using PollStar.Core.Configuration;
 using PollStar.Core.Events;
+using PollStar.Core.ExtensionMethods;
 using PollStar.Core.Factories;
 using PollStar.Votes.Abstractions.DataTransferObjects;
 using PollStar.Votes.Abstractions.Repositories;
@@ -15,7 +15,7 @@ public class PollStarVotesService: IPollStarVotesService
 {
     private readonly IPollStarVotesRepositories _repository;
     private readonly IOptions<AzureConfiguration> _cloudConfiguration;
-    private readonly IStorageQueueClientFactory _queueFactory;
+    private readonly IServiceBusClientFactory _queueFactory;
     private const string QueueName = "votes";
 
 
@@ -24,11 +24,10 @@ public class PollStarVotesService: IPollStarVotesService
         return _repository.GetPollVostesAsync(pollId);
     }
 
-    public async Task<string> CastVoteAsync(CastVoteDto dto)
+    public async Task CastVoteAsync(CastVoteDto dto)
     {
-        var queueClient = _queueFactory.CreateClient(QueueName);
-        var response = await queueClient.SendMessageAsync(JsonConvert.SerializeObject(dto));
-        return response.Value.MessageId;
+        var queueClient = _queueFactory.CreateSender(QueueName);
+        await queueClient.SendMessageAsync(dto.ToServiceBusMessage());
     }
 
     private async Task BroadcastPollVotes(Guid sessionId, VotesDto dto)
@@ -38,7 +37,7 @@ public class PollStarVotesService: IPollStarVotesService
         await pubsubClient.SendToGroupAsync(sessionId.ToString(), payload, ContentType.ApplicationJson);
     }
 
-    public PollStarVotesService(IPollStarVotesRepositories repository, IOptions<AzureConfiguration> cloudConfiguration, IStorageQueueClientFactory queueFactory)
+    public PollStarVotesService(IPollStarVotesRepositories repository, IOptions<AzureConfiguration> cloudConfiguration, IServiceBusClientFactory queueFactory)
     {
         _repository = repository;
         _cloudConfiguration = cloudConfiguration;
