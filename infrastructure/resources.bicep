@@ -115,7 +115,7 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
             }
             {
               name: 'Azure__ServiceBus'
-              value: serviceBus.properties.serviceBusEndpoint
+              value: '${serviceBus.name}.servicebus.windows.net'
             }
             {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'

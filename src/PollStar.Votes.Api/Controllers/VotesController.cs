@@ -28,8 +28,8 @@ namespace PollStar.Votes.Api.Controllers
         {
             try
             {
-                var result = await _service.CastVoteAsync(dto);
-                return Ok(result);
+                 await _service.CastVoteAsync(dto);
+                 return Accepted();
             }
             catch (Exception ex)
             {
