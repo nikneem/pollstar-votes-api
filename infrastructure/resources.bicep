@@ -17,7 +17,6 @@ resource tableDataContributorRole 'Microsoft.Authorization/roleDefinitions@2018-
   scope: resourceGroup()
   name: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
 }
-
 resource containerAppEnvironments 'Microsoft.App/managedEnvironments@2022-03-01' existing = {
   name: containerAppEnvironmentResourceName
   scope: resourceGroup(integrationResourceGroupName)
@@ -28,6 +27,10 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing
 }
 resource webPubSub 'Microsoft.SignalRService/webPubSub@2021-10-01' existing = {
   name: webPubSubResourceName
+  scope: resourceGroup(integrationResourceGroupName)
+}
+resource serviceBus 'Microsoft.SignalRService/webPubSub@2021-10-01' existing = {
+  name: serviceBusResourceName
   scope: resourceGroup(integrationResourceGroupName)
 }
 
@@ -109,6 +112,10 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
             {
               name: 'Azure__PollStarHub'
               value: 'pollstar'
+            }
+            {
+              name: 'Azure__ServiceBus'
+              value: serviceBus.properties.hostName
             }
             {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'

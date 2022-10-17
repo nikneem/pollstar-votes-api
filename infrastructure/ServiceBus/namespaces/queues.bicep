@@ -42,3 +42,5 @@ resource serviceBusReceiverRolePermission 'Microsoft.Authorization/roleAssignmen
     roleDefinitionId: serviceBusReceiverRole.id
   }
 }
+
+output serviceBusNamespace string = serviceBus.properties.serviceBusEndpoint
