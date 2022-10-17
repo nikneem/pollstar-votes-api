@@ -29,7 +29,7 @@ resource webPubSub 'Microsoft.SignalRService/webPubSub@2021-10-01' existing = {
   name: webPubSubResourceName
   scope: resourceGroup(integrationResourceGroupName)
 }
-resource serviceBus 'Microsoft.SignalRService/webPubSub@2021-10-01' existing = {
+resource serviceBus 'Microsoft.ServiceBus/namespaces@2022-01-01-preview' existing = {
   name: serviceBusResourceName
   scope: resourceGroup(integrationResourceGroupName)
 }
@@ -115,7 +115,7 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
             }
             {
               name: 'Azure__ServiceBus'
-              value: serviceBus.properties.hostName
+              value: serviceBus.properties.serviceBusEndpoint
             }
             {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
