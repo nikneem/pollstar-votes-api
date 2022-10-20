@@ -44,5 +44,6 @@ module resourcesModule 'resources.bicep' = {
     webPubSubResourceName: webPubSubResourceName
     serviceBusResourceName: serviceBusResourceName
     queues: queues
+    environmentName: environmentName
   }
 }

@@ -2,7 +2,7 @@ param defaultResourceName string
 param location string
 param storageAccountTables array
 param containerVersion string
-
+param environmentName string
 param integrationResourceGroupName string
 param containerAppEnvironmentResourceName string
 param applicationInsightsResourceName string
@@ -94,7 +94,7 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
     template: {
       containers: [
         {
-          image: 'pollstarinttestneuacr.azurecr.io/${containerAppName}:${containerVersion}'
+          image: 'pollstarint${environmentName}neuacr.azurecr.io/${containerAppName}:${containerVersion}'
           name: containerAppName
           resources: {
             cpu: json('0.25')
