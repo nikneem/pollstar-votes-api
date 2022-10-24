@@ -1,5 +1,6 @@
 ﻿using Azure.Core;
 using Azure.Messaging.WebPubSub;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PollStar.Core.Configuration;
 using PollStar.Core.Events;
@@ -13,8 +14,8 @@ namespace PollStar.Votes.Services;
 
 public class PollStarVotesService: IPollStarVotesService
 {
+    private readonly ILogger<PollStarVotesService> _logger;
     private readonly IPollStarVotesRepositories _repository;
-    private readonly IOptions<AzureConfiguration> _cloudConfiguration;
     private readonly IServiceBusClientFactory _queueFactory;
     private const string QueueName = "votes";
 
@@ -26,21 +27,31 @@ public class PollStarVotesService: IPollStarVotesService
 
     public async Task CastVoteAsync(CastVoteDto dto)
     {
-        var queueClient = _queueFactory.CreateSender(QueueName);
-        await queueClient.SendMessageAsync(dto.ToServiceBusMessage());
+        try
+        {
+            var queueClient = _queueFactory.CreateSender(QueueName);
+            await queueClient.SendMessageAsync(dto.ToServiceBusMessage());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to queue vote message on service bus queue");
+        }
     }
 
-    private async Task BroadcastPollVotes(Guid sessionId, VotesDto dto)
-    {
-        var pubsubClient = new WebPubSubServiceClient(_cloudConfiguration.Value.WebPubSub, _cloudConfiguration.Value.PollStarHub);
-        var payload = RealtimeEvent.FromDto("poll-votes", dto.Votes);
-        await pubsubClient.SendToGroupAsync(sessionId.ToString(), payload, ContentType.ApplicationJson);
-    }
+    //private async Task BroadcastPollVotes(Guid sessionId, VotesDto dto)
+    //{
+    //    var pubsubClient = new WebPubSubServiceClient(_cloudConfiguration.Value.WebPubSub, _cloudConfiguration.Value.PollStarHub);
+    //    var payload = RealtimeEvent.FromDto("poll-votes", dto.Votes);
+    //    await pubsubClient.SendToGroupAsync(sessionId.ToString(), payload, ContentType.ApplicationJson);
+    //}
 
-    public PollStarVotesService(IPollStarVotesRepositories repository, IOptions<AzureConfiguration> cloudConfiguration, IServiceBusClientFactory queueFactory)
+    public PollStarVotesService(
+        ILogger<PollStarVotesService> logger,
+        IPollStarVotesRepositories repository, 
+        IServiceBusClientFactory queueFactory)
     {
+        _logger = logger;
         _repository = repository;
-        _cloudConfiguration = cloudConfiguration;
         _queueFactory = queueFactory;
     }
 }

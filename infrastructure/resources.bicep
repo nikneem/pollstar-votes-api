@@ -163,3 +163,16 @@ module keyVaultAccessPolicies 'accessPolicies.bicep' = {
     principalId: apiContainerApp.identity.principalId
   }
 }
+
+resource accessSecretsRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
+  scope: resourceGroup()
+  name: '4633458b-17de-408a-b874-0445c86b69e6'
+}
+module keyVaultSecretsAccessRoleAssignment 'roleAssignment.bicep' = {
+  name: 'keyVaultSecretsAccessRoleAssignmentModule'
+  scope: resourceGroup()
+  params: {
+    principalId: apiContainerApp.identity.principalId
+    roleDefinitionId: accessSecretsRole.id
+  }
+}
