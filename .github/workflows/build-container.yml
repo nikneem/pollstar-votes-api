@@ -57,7 +57,7 @@ jobs:
         run: |
           az bicep build --file main.bicep
       - name: Publish Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: bicep-templates
           path: infrastructure/*.json
@@ -74,11 +74,11 @@ jobs:
           name: bicep-templates
           path: ./infrastructure
       - name: Azure Login
-        uses: azure/login@v1.4.0
+        uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_PROD }}
       - name: Deploy Infrastructure
         id: arm
-        uses: Azure/cli@1.0.4
+        uses: Azure/cli@v1
         with:
           inlineScript: az deployment sub create --name pollstar-votes-api  --location northeurope --template-file ./infrastructure/main.json --parameters ./infrastructure/params.prod.json --parameters containerVersion=${{needs.versionize.outputs.semver}}
