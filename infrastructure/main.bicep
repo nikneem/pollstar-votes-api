@@ -12,12 +12,13 @@ param location string = deployment().location
 param locationAbbreviation string
 param containerVersion string
 param queues array
+param developersGroup string
 
 var integrationResourceGroupName = toLower('pollstar-int-${environmentName}-${locationAbbreviation}')
 var containerAppEnvironmentName = '${integrationResourceGroupName}-env'
-var applicationInsightsResourceName = '${integrationResourceGroupName}-ai'
-var webPubSubResourceName = '${integrationResourceGroupName}-pubsub'
 var serviceBusResourceName = '${integrationResourceGroupName}-bus'
+var azureAppConfigurationName = '${integrationResourceGroupName}-cfg'
+var azureIntegrationKeyVaultName = '${integrationResourceGroupName}-kv'
 
 var apiResourceGroupName = toLower('${systemName}-${environmentName}-${locationAbbreviation}')
 
@@ -40,10 +41,12 @@ module resourcesModule 'resources.bicep' = {
     containerVersion: containerVersion
     integrationResourceGroupName: integrationResourceGroupName
     containerAppEnvironmentResourceName: containerAppEnvironmentName
-    applicationInsightsResourceName: applicationInsightsResourceName
-    webPubSubResourceName: webPubSubResourceName
     serviceBusResourceName: serviceBusResourceName
     queues: queues
     environmentName: environmentName
+    azureAppConfigurationName: azureAppConfigurationName
+    azureIntegrationKeyVaultName: azureIntegrationKeyVaultName
+    developersGroup: developersGroup
+
   }
 }

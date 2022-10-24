@@ -13,6 +13,9 @@
     },
     "queues": {
       "value": ["votes"]
+    },
+    "developersGroup": {
+      "value": "84827723-cffa-465d-813f-9e24c60e4187"
     }
   }
 }
