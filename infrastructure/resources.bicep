@@ -161,7 +161,7 @@ resource accessSecretsRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-p
 }
 module keyVaultSecretsAccessRoleAssignment 'roleAssignment.bicep' = {
   name: 'keyVaultSecretsAccessRoleAssignmentModule'
-  scope: resourceGroup()
+  scope: resourceGroup(integrationResourceGroupName)
   params: {
     principalId: apiContainerApp.identity.principalId
     roleDefinitionId: accessSecretsRole.id
