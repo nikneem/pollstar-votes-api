@@ -59,19 +59,17 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
   }
   properties: {
     managedEnvironmentId: containerAppEnvironments.id
-
     configuration: {
       activeRevisionsMode: 'Single'
       ingress: {
         external: false
-        targetPort: 80
+        targetPort: containerPort
         transport: 'auto'
         allowInsecure: false
         traffic: [
           {
             weight: 100
-            label: containerVersion
-            revisionName: containerVersion
+            latestRevision: true
           }
         ]
       }
@@ -100,6 +98,7 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
               value: appConfiguration.properties.endpoint
             }
           ]
+
         }
       ]
       scale: {
