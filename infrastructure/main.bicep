@@ -18,7 +18,6 @@ var integrationResourceGroupName = toLower('pollstar-int-${environmentName}-${lo
 var containerAppEnvironmentName = '${integrationResourceGroupName}-env'
 var serviceBusResourceName = '${integrationResourceGroupName}-bus'
 var azureAppConfigurationName = '${integrationResourceGroupName}-cfg'
-var azureIntegrationKeyVaultName = '${integrationResourceGroupName}-kv'
 
 var apiResourceGroupName = toLower('${systemName}-${environmentName}-${locationAbbreviation}')
 
@@ -45,8 +44,6 @@ module resourcesModule 'resources.bicep' = {
     queues: queues
     environmentName: environmentName
     azureAppConfigurationName: azureAppConfigurationName
-    azureIntegrationKeyVaultName: azureIntegrationKeyVaultName
     developersGroup: developersGroup
-
   }
 }
