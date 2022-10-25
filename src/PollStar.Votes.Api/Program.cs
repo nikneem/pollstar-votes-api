@@ -1,4 +1,5 @@
 using Azure.Identity;
+using HexMaster.RedisCache;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using PollStar.Core.Configuration;
 using PollStar.Core.ExtensionMethods;
@@ -25,6 +26,7 @@ catch (Exception ex)
 
 builder.Services.AddPollStarCore(builder.Configuration);
 builder.Services.AddPollStarVotes();
+builder.Services.AddHexMasterCache(builder.Configuration);
 
 builder.Services.AddCors(options =>
 {

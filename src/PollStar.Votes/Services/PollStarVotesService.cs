@@ -1,5 +1,7 @@
-﻿using Azure.Core;
+﻿using System.Net.WebSockets;
+using Azure.Core;
 using Azure.Messaging.WebPubSub;
+using HexMaster.RedisCache.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PollStar.Core.Configuration;
@@ -16,13 +18,17 @@ public class PollStarVotesService: IPollStarVotesService
 {
     private readonly ILogger<PollStarVotesService> _logger;
     private readonly IPollStarVotesRepositories _repository;
+    private readonly IPollStarChartsRepositories _chartsRepository;
     private readonly IServiceBusClientFactory _queueFactory;
+    private readonly ICacheClientFactory _cacheClientFactory;
     private const string QueueName = "votes";
 
 
-    public Task<VotesDto> GetVotesAsync(Guid pollId)
+    public  Task<VotesDto> GetVotesAsync(Guid pollId)
     {
-        return _repository.GetPollVostesAsync(pollId);
+        var cacheClient = _cacheClientFactory.CreateClient();
+        var cacheKey = $"PollStar:Polls:{pollId}:summary";
+        return cacheClient.GetOrInitializeAsync(() => GetVotesSummaryFromRepository(pollId), cacheKey);
     }
 
     public async Task CastVoteAsync(CastVoteDto dto)
@@ -38,6 +44,11 @@ public class PollStarVotesService: IPollStarVotesService
         }
     }
 
+    private  Task<VotesDto> GetVotesSummaryFromRepository(Guid pollId)
+    {
+        return  _chartsRepository.GetVotesSummary(pollId);
+    }
+
     //private async Task BroadcastPollVotes(Guid sessionId, VotesDto dto)
     //{
     //    var pubsubClient = new WebPubSubServiceClient(_cloudConfiguration.Value.WebPubSub, _cloudConfiguration.Value.PollStarHub);
@@ -47,11 +58,16 @@ public class PollStarVotesService: IPollStarVotesService
 
     public PollStarVotesService(
         ILogger<PollStarVotesService> logger,
-        IPollStarVotesRepositories repository, 
-        IServiceBusClientFactory queueFactory)
+        IPollStarVotesRepositories repository,
+        IPollStarChartsRepositories chartsRepository,
+        IServiceBusClientFactory queueFactory,
+        ICacheClientFactory cacheClientFactory
+        )
     {
         _logger = logger;
         _repository = repository;
+        _chartsRepository = chartsRepository;
         _queueFactory = queueFactory;
+        _cacheClientFactory = cacheClientFactory;
     }
 }

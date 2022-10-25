@@ -12,6 +12,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddTransient<IPollStarVotesService, PollStarVotesService>();
         services.AddTransient<IPollStarVotesRepositories, PollStarVotesRepositories>();
+        services.AddTransient<IPollStarChartsRepositories, PollStarChartsRepositories>();
         return services;
     }
 }

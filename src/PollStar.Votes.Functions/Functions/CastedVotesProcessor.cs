@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
 using Azure.Messaging.ServiceBus;
+using HexMaster.RedisCache.Abstractions;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -18,6 +19,7 @@ namespace PollStar.Votes.Functions.Functions
 {
     public class CastedVotesProcessor
     {
+
         [FunctionName("CastedVotesProcessor")]
         public async Task Run(
             [ServiceBusTrigger(Queues.Votes, Connection = "ServiceBusConnection")] ServiceBusReceivedMessage message,
@@ -65,5 +67,7 @@ namespace PollStar.Votes.Functions.Functions
                 }
             }
         }
+
+
     }
 }

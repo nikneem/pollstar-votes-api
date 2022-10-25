@@ -14,11 +14,14 @@ using PollStar.Charts.Api;
 using PollStar.Votes.Abstractions.DataTransferObjects;
 using PollStar.Votes.Functions.Commands;
 using PollStar.Votes.Repositories.Entities;
+using HexMaster.RedisCache.Abstractions;
 
 namespace PollStar.Votes.Functions.Functions;
 
 public class ChartCalculationProcessor
 {
+    private readonly ICacheClientFactory _cacheClientFactory;
+
     [FunctionName("ChartCalculationProcessor")]
     public async Task Run(
         [ServiceBusTrigger(Queues.Charts, Connection = "ServiceBusConnection")]
@@ -61,6 +64,24 @@ public class ChartCalculationProcessor
                 .ToList();
 
             var transaction = new List<TableTransactionAction>();
+
+            try
+            {
+                var cacheClient = _cacheClientFactory.CreateClient();
+                var cacheKey = $"PollStar:Polls:{payload.PollId}:summary";
+                var votesCachedModel = new VotesDto
+                {
+                    PollId = payload.PollId,
+                    Votes = votesSummary
+                };
+                await cacheClient.SetAsAsync(cacheKey, votesCachedModel);
+            }
+            catch (Exception ex)
+            {
+                log.LogWarning(ex, "Failed to store summary in cache");
+            }
+
+
             foreach (var voteSum in votesSummary)
             {
                 transaction.Add(new TableTransactionAction(TableTransactionActionType.UpdateReplace,
@@ -80,5 +101,10 @@ public class ChartCalculationProcessor
             }
         }
         log.LogInformation("Took {milliseconds} milliseconds to process casted votes into a chart model", sw.ElapsedMilliseconds);
+    }
+
+    public ChartCalculationProcessor(ICacheClientFactory cacheClientFactory)
+    {
+        _cacheClientFactory = cacheClientFactory;
     }
 }
