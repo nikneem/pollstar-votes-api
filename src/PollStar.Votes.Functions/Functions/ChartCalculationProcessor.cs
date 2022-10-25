@@ -29,13 +29,12 @@ public class ChartCalculationProcessor
     public async Task Run(
         [ServiceBusTrigger(Queues.Charts, Connection = "ServiceBusConnection")]
         ServiceBusReceivedMessage message,
-        [WebPubSub(Hub = "<hub>")] IAsyncCollector<WebPubSubAction> actions,
+        [WebPubSub(Hub = "pollstar", Connection = "Azure:WebPubSub")] IAsyncCollector<WebPubSubAction> actions,
         [Table(Tables.Votes)] TableClient votesClient,
         [Table(Tables.Charts)] TableClient chartsClient,
         ILogger log)
     {
         var sw = Stopwatch.StartNew();
-        //        var continuationTime = DateTimeOffset.UtcNow.AddMinutes(-1);
         var payloadString = Encoding.UTF8.GetString(message.Body);
         var payload = JsonConvert.DeserializeObject<ChartCalculationCommand>(payloadString);
         if (payload == null)
@@ -45,10 +44,11 @@ public class ChartCalculationProcessor
         else
         {
             var votes = new List<VoteOptionsDto>();
-            var votesQuery = votesClient.QueryAsync<VoteTableEntity>(
-                $"{nameof(VoteTableEntity.PartitionKey)} eq '{payload.PollId}'");
+            var votesQuery = votesClient.QueryAsync<VoteTableEntity>($"{nameof(VoteTableEntity.PartitionKey)} eq '{payload.PollId}'");
+            log.LogInformation("Querying votes for poll {pollId} to process votes summary", payload.PollId);
             await foreach (var page in votesQuery.AsPages())
             {
+                log.LogInformation("Fetched batch of {votesCount} votes for processing", page.Values.Count);
                 votes.AddRange(page.Values.Select(v =>
                     new VoteOptionsDto
                     {
@@ -62,30 +62,16 @@ public class ChartCalculationProcessor
                     {OptionId = vc.Key, Votes = vc.Sum(vq => vq.Votes)})
                 .ToList();
 
+            log.LogInformation("Processed a summary of votes for poll {pollId}: {summary}", payload.PollId, votesSummary);
+
             var transaction = new List<TableTransactionAction>();
-
-            try
+            var votesCachedModel = new VotesDto
             {
-                var cacheClient = _cacheClientFactory.CreateClient();
-                var cacheKey = $"PollStar:Polls:{payload.PollId}:summary";
-                var votesCachedModel = new VotesDto
-                {
-                    PollId = payload.PollId,
-                    Votes = votesSummary
-                };
-                await cacheClient.SetAsAsync(cacheKey, votesCachedModel);
-                    var realtimePayload = RealtimeEvent.FromDto("poll-votes", votesCachedModel.Votes);
-                    await actions.AddAsync(WebPubSubAction.CreateSendToGroupAction(
-                        payload.SessionId.ToString(), 
-                        realtimePayload,
-                        WebPubSubDataType.Json));
-            }
-            catch (Exception ex)
-            {
-                log.LogWarning(ex, "Failed to store summary in cache");
-            }
+                PollId = payload.PollId,
+                Votes = votesSummary
+            };
 
-
+            log.LogInformation("Persisting votes summary for poll {pollId}", payload.PollId);
             foreach (var voteSum in votesSummary)
             {
                 transaction.Add(new TableTransactionAction(TableTransactionActionType.UpdateReplace,
@@ -102,6 +88,36 @@ public class ChartCalculationProcessor
             if (transaction.Count > 0)
             {
                 await chartsClient.SubmitTransactionAsync(transaction);
+            }
+            log.LogInformation("Persisting votes summary for poll {pollId}... Succeeded", payload.PollId);
+
+            try
+            {
+                var cacheClient = _cacheClientFactory.CreateClient();
+                var cacheKey = $"PollStar:Polls:{payload.PollId}:summary";
+
+                log.LogInformation("Trying to store votes summary in distributed cache");
+                await cacheClient.SetAsAsync(cacheKey, votesCachedModel);
+                log.LogInformation("Trying to store votes summary in distributed cache... Succeeded");
+            }
+            catch (Exception ex)
+            {
+                log.LogWarning(ex, "Failed to store summary in cache");
+            }
+
+            try
+            {
+                log.LogInformation("Trying to broadcast real-time event");
+                var realtimePayload = RealtimeEvent.FromDto("poll-votes", votesCachedModel.Votes);
+                await actions.AddAsync(WebPubSubAction.CreateSendToGroupAction(
+                    payload.SessionId.ToString(),
+                    realtimePayload,
+                    WebPubSubDataType.Json));
+                log.LogInformation("Trying to broadcast real-time event... Succeeded");
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Failed to broadcast real-time event for votes summary (PubSub)");
             }
         }
         log.LogInformation("Took {milliseconds} milliseconds to process casted votes into a chart model", sw.ElapsedMilliseconds);
