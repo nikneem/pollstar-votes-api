@@ -182,6 +182,7 @@ module roleAssignmentsModule 'all-role-assignments.bicep' = {
 
 module functionRoleAssignmentsModule 'all-role-assignments.bicep' = {
   name: 'functionRoleAssignmentsModule'
+  dependsOn: [ roleAssignmentsModule ]
   params: {
     containerAppPrincipalId: funcContainerApp.identity.principalId
     developersGroup: ''
