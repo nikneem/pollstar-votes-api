@@ -9,7 +9,9 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using PollStar.Charts.Api;
+using PollStar.Core.ExtensionMethods;
 using PollStar.Votes.Abstractions.DataTransferObjects;
+using PollStar.Votes.Functions.Commands;
 using PollStar.Votes.Repositories.Entities;
 
 namespace PollStar.Votes.Functions.Functions
@@ -19,6 +21,7 @@ namespace PollStar.Votes.Functions.Functions
         [FunctionName("CastedVotesProcessor")]
         public async Task Run(
             [ServiceBusTrigger(Queues.Votes, Connection = "ServiceBusConnection")] ServiceBusReceivedMessage message,
+            [ServiceBus(Queues.Charts, Connection = "ServiceBusConnection")] IAsyncCollector<ServiceBusMessage> calculationCommands,
             [Table(Tables.Votes)] TableClient client,
             ILogger log)
         {
@@ -46,20 +49,20 @@ namespace PollStar.Votes.Functions.Functions
 
                 await client.UpsertEntityAsync(voteEntity);
 
-                //var calcCommand = new ChartCalculationCommand
-                //{
-                //    PollId = payload.PollId,
-                //    SessionId = payload.SessionId
-                //}.ToServiceBusMessage();
-                //try
-                //{
-                //    await messages.AddAsync(calcCommand);
-                //    await messages.FlushAsync();
-                //}
-                //catch (Exception ex)
-                //{
-                //    log.LogError(ex, "Failure");
-                //}
+                var calcCommand = new ChartCalculationCommand
+                {
+                    PollId = payload.PollId,
+                    SessionId = payload.SessionId
+                }.ToServiceBusMessage();
+                try
+                {
+                    await calculationCommands.AddAsync(calcCommand);
+                    await calculationCommands.FlushAsync();
+                }
+                catch (Exception ex)
+                {
+                    log.LogError(ex, "Failure");
+                }
             }
         }
     }
