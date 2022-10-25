@@ -129,11 +129,11 @@ resource funcContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
       activeRevisionsMode: 'Single'
       secrets: [
         {
-          name: 'StorageAccountKey'
+          name: 'storage-account-key'
           value: storageAccount.listKeys().keys[0].value
         }
         {
-          name: 'AzureWebJobsStorage'
+          name: 'azure-web-jobs-storage'
           value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
         }
       ]
@@ -163,7 +163,7 @@ resource funcContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
             }
             {
               name: 'AzureWebJobsStorage'
-              secretRef: 'AzureWebJobsStorage'
+              secretRef: 'azure-web-jobs-storage'
             }
             {
               name: 'ServiceBusConnection__fullyQualifiedNamespace'
