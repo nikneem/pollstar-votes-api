@@ -15,6 +15,9 @@ using PollStar.Votes.Abstractions.DataTransferObjects;
 using PollStar.Votes.Functions.Commands;
 using PollStar.Votes.Repositories.Entities;
 using HexMaster.RedisCache.Abstractions;
+using Microsoft.Azure.WebJobs.Extensions.WebPubSub;
+using Microsoft.Azure.WebPubSub.Common;
+using PollStar.Core.Events;
 
 namespace PollStar.Votes.Functions.Functions;
 
@@ -26,6 +29,7 @@ public class ChartCalculationProcessor
     public async Task Run(
         [ServiceBusTrigger(Queues.Charts, Connection = "ServiceBusConnection")]
         ServiceBusReceivedMessage message,
+        [WebPubSub(Hub = "<hub>")] IAsyncCollector<WebPubSubAction> actions,
         [Table(Tables.Votes)] TableClient votesClient,
         [Table(Tables.Charts)] TableClient chartsClient,
         ILogger log)
@@ -75,6 +79,11 @@ public class ChartCalculationProcessor
                     Votes = votesSummary
                 };
                 await cacheClient.SetAsAsync(cacheKey, votesCachedModel);
+                    var realtimePayload = RealtimeEvent.FromDto("poll-votes", votesCachedModel.Votes);
+                    await actions.AddAsync(WebPubSubAction.CreateSendToGroupAction(
+                        payload.SessionId.ToString(), 
+                        realtimePayload,
+                        WebPubSubDataType.Json));
             }
             catch (Exception ex)
             {
