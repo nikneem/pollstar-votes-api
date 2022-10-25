@@ -116,7 +116,7 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
 }
 
 resource funcContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
-  name: '${defaultResourceName}-func-aca'
+  name: '${defaultResourceName}-func'
   location: location
   identity: {
     type: 'SystemAssigned'
