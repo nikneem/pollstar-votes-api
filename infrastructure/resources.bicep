@@ -26,6 +26,8 @@ resource serviceBus 'Microsoft.ServiceBus/namespaces@2022-01-01-preview' existin
   name: serviceBusResourceName
   scope: resourceGroup(integrationResourceGroupName)
 }
+var serviceBusEndpoint = '${serviceBus.id}/AuthorizationRules/RootManageSharedAccessKey'
+var serviceBusConnectionString = listKeys(serviceBusEndpoint, serviceBus.apiVersion).primaryConnectionString
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' = {
   name: uniqueString(defaultResourceName)
@@ -142,7 +144,7 @@ resource funcContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
         }
         {
           name: 'servicebus-connection-string'
-          value: 'Endpoint=sb://${serviceBus.name}.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=${listKeys(serviceBus.id, serviceBus.apiVersion).primaryKey}'
+          value: serviceBusConnectionString
         }
       ]
       dapr: {
