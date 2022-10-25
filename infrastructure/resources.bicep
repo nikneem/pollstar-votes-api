@@ -76,8 +76,8 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
     template: {
       containers: [
         {
-          image: 'pollstarint${environmentName}neuacr.azurecr.io/${functionAppName}:${containerVersion}'
-          name: functionAppName
+          image: 'pollstarint${environmentName}neuacr.azurecr.io/${containerAppName}:${containerVersion}'
+          name: containerAppName
           resources: {
             cpu: json('0.25')
             memory: '0.5Gi'
@@ -132,8 +132,8 @@ resource funcContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
     template: {
       containers: [
         {
-          image: 'pollstarint${environmentName}neuacr.azurecr.io/${containerAppName}:${containerVersion}'
-          name: containerAppName
+          image: 'pollstarint${environmentName}neuacr.azurecr.io/${functionAppName}:${containerVersion}'
+          name: functionAppName
           resources: {
             cpu: json('0.25')
             memory: '0.5Gi'
