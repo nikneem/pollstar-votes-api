@@ -47,8 +47,6 @@ module queuesModule 'ServiceBus/namespaces/queues.bicep' = {
     serviceBusName: serviceBusResourceName
     location: location
     queues: queues
-    principalId: apiContainerApp.identity.principalId
-    allowSending: true
   }
 }
 
