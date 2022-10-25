@@ -22,6 +22,10 @@ resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2022-0
   name: azureAppConfigurationName
   scope: resourceGroup(integrationResourceGroupName)
 }
+resource serviceBus 'Microsoft.ServiceBus/namespaces@2022-01-01-preview' existing = {
+  name: serviceBusResourceName
+  scope: resourceGroup(integrationResourceGroupName)
+}
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' = {
   name: uniqueString(defaultResourceName)
@@ -136,6 +140,10 @@ resource funcContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
           name: 'azure-web-jobs-storage'
           value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
         }
+        {
+          name: 'servicebus-connection-string'
+          value: 'Endpoint=sb://${serviceBus.name}.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=${listKeys(serviceBus.id, serviceBus.apiVersion).primaryKey}'
+        }
       ]
       dapr: {
         enabled: true
@@ -178,15 +186,23 @@ resource funcContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
         }
       ]
       scale: {
-        minReplicas: 1
+        minReplicas: 0
         maxReplicas: 6
         rules: [
           {
-            name: 'http-rule'
-            http: {
+            name: 'event-driven'
+            custom: {
+              type: 'azure-servicebus'
               metadata: {
-                concurrentRequests: '30'
+                queueName: 'votes'
+                messageCount: '20'
               }
+              auth: [
+                {
+                  secretRef: 'servicebus-connection-string'
+                  triggerParameter: 'connection'
+                }
+              ]
             }
           }
         ]
