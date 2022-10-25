@@ -52,11 +52,17 @@ module queuesModule 'ServiceBus/namespaces/queues.bicep' = {
   }
 }
 
+resource userAssigned 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' = {
+  name: '${defaultResourceName}-uaid'
+  location: location
+}
+
 resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
   name: '${defaultResourceName}-aca'
   location: location
   identity: {
-    type: 'SystemAssigned'
+    type: 'UserAssigned'
+    userAssignedIdentities: userAssigned
   }
   properties: {
     managedEnvironmentId: containerAppEnvironments.id
@@ -119,7 +125,8 @@ resource funcContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
   name: '${defaultResourceName}-func'
   location: location
   identity: {
-    type: 'SystemAssigned'
+    type: 'UserAssigned'
+    userAssignedIdentities: userAssigned
   }
   properties: {
     managedEnvironmentId: containerAppEnvironments.id
@@ -174,18 +181,8 @@ resource funcContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
 module roleAssignmentsModule 'all-role-assignments.bicep' = {
   name: 'roleAssignmentsModule'
   params: {
-    containerAppPrincipalId: apiContainerApp.identity.principalId
+    containerAppPrincipalId: userAssigned.properties.principalId
     developersGroup: developersGroup
-    integrationResourceGroupName: integrationResourceGroupName
-  }
-}
-
-module functionRoleAssignmentsModule 'all-role-assignments.bicep' = {
-  name: 'functionRoleAssignmentsModule'
-  dependsOn: [ roleAssignmentsModule ]
-  params: {
-    containerAppPrincipalId: funcContainerApp.identity.principalId
-    developersGroup: ''
     integrationResourceGroupName: integrationResourceGroupName
   }
 }
