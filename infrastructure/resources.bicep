@@ -72,7 +72,11 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
           }
         ]
       }
-    }
+      dapr: {
+        enabled: true
+        appPort: containerPort
+        appId: containerAppName
+      } }
     template: {
       containers: [
         {
@@ -136,7 +140,7 @@ resource funcContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
       dapr: {
         enabled: true
         appPort: containerPort
-        appId: containerAppName
+        appId: functionAppName
       }
     }
     template: {
