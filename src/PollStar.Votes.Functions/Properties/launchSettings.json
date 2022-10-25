@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "PollStar.Votes.Functions": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7034"
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "httpPort": 30120,
+      "useSSL": false
+    }
+  }
+}

@@ -23,6 +23,7 @@ var apiResourceGroupName = toLower('${systemName}-${environmentName}-${locationA
 
 var storageAccountTables = [
   'votes'
+  'charts'
 ]
 
 resource apiResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
