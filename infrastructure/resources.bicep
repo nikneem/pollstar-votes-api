@@ -12,6 +12,7 @@ param developersGroup string
 
 param containerPort int = 80
 param containerAppName string = 'pollstar-votes-api'
+param functionAppName string = 'pollstar-votes-func'
 
 resource containerAppEnvironments 'Microsoft.App/managedEnvironments@2022-03-01' existing = {
   name: containerAppEnvironmentResourceName
@@ -73,6 +74,57 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
           }
         ]
       }
+    }
+    template: {
+      containers: [
+        {
+          image: 'pollstarint${environmentName}neuacr.azurecr.io/${functionAppName}:${containerVersion}'
+          name: functionAppName
+          resources: {
+            cpu: json('0.25')
+            memory: '0.5Gi'
+          }
+          env: [
+            {
+              name: 'Azure__StorageAccount'
+              value: storageAccount.name
+            }
+            {
+              name: 'AzureAppConfiguration'
+              value: appConfiguration.properties.endpoint
+            }
+          ]
+
+        }
+      ]
+      scale: {
+        minReplicas: 1
+        maxReplicas: 6
+        rules: [
+          {
+            name: 'http-rule'
+            http: {
+              metadata: {
+                concurrentRequests: '30'
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+
+resource funcContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
+  name: '${defaultResourceName}-func-aca'
+  location: location
+  identity: {
+    type: 'SystemAssigned'
+  }
+  properties: {
+    managedEnvironmentId: containerAppEnvironments.id
+    configuration: {
+      activeRevisionsMode: 'Single'
       dapr: {
         enabled: true
         appPort: containerPort
@@ -124,6 +176,15 @@ module roleAssignmentsModule 'all-role-assignments.bicep' = {
   params: {
     containerAppPrincipalId: apiContainerApp.identity.principalId
     developersGroup: developersGroup
+    integrationResourceGroupName: integrationResourceGroupName
+  }
+}
+
+module functionRoleAssignmentsModule 'all-role-assignments.bicep' = {
+  name: 'functionRoleAssignmentsModule'
+  params: {
+    containerAppPrincipalId: funcContainerApp.identity.principalId
+    developersGroup: ''
     integrationResourceGroupName: integrationResourceGroupName
   }
 }

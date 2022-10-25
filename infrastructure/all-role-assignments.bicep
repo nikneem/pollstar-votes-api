@@ -14,7 +14,7 @@ module storageAccountDataReaderRoleAssignment 'roleAssignment.bicep' = {
     roleDefinitionId: storageAccountDataContributorRole.id
   }
 }
-module storageAccountDataReaderRoleAssignmentForDevelopers 'roleAssignment.bicep' = {
+module storageAccountDataReaderRoleAssignmentForDevelopers 'roleAssignment.bicep' = if (length(developersGroup) > 0) {
   name: 'storageAccountDataReaderRoleAssignmentForDevelopersModule'
   scope: resourceGroup()
   params: {
