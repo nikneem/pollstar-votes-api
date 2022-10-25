@@ -123,6 +123,16 @@ resource funcContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
     managedEnvironmentId: containerAppEnvironments.id
     configuration: {
       activeRevisionsMode: 'Single'
+      secrets: [
+        {
+          name: 'StorageAccountKey'
+          value: storageAccount.listKeys().keys[0].value
+        }
+        {
+          name: 'AzureWebJobsStorage'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
+        }
+      ]
       dapr: {
         enabled: true
         appPort: containerPort
@@ -146,6 +156,18 @@ resource funcContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
             {
               name: 'AzureAppConfiguration'
               value: appConfiguration.properties.endpoint
+            }
+            {
+              name: 'AzureWebJobsStorage'
+              secretRef: 'AzureWebJobsStorage'
+            }
+            {
+              name: 'ServiceBusConnection__fullyQualifiedNamespace'
+              value: 'pollstar-int-prod-neu-bus.servicebus.windows.net'
+            }
+            {
+              name: 'FUNCTIONS_WORKER_RUNTIME'
+              value: 'dotnet'
             }
           ]
 
