@@ -45,12 +45,10 @@ public class ChartCalculationProcessor
         else
         {
             var votes = new List<VoteOptionsDto>();
-            //            var voteEntities = new List<CastedVoteEntity>();
             var votesQuery = votesClient.QueryAsync<VoteTableEntity>(
                 $"{nameof(VoteTableEntity.PartitionKey)} eq '{payload.PollId}'");
             await foreach (var page in votesQuery.AsPages())
             {
-                //                voteEntities.AddRange(page.Values);
                 votes.AddRange(page.Values.Select(v =>
                     new VoteOptionsDto
                     {
@@ -58,9 +56,6 @@ public class ChartCalculationProcessor
                         Votes = 1
                     }));
             }
-
-            //            var lastVote = voteEntities.Max(ve => ve.Timestamp);
-            //            var continueCumulation = lastVote.HasValue && lastVote.Value.CompareTo(continuationTime) > 0;
 
             var votesSummary = votes.GroupBy(v => v.OptionId)
                 .Select((vc) => new VoteOptionsDto
