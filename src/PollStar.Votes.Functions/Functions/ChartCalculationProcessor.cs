@@ -43,6 +43,9 @@ public class ChartCalculationProcessor
         }
         else
         {
+            Activity.Current?.AddTag("PollId", payload.PollId.ToString());
+            Activity.Current?.AddTag("UserId", payload.SessionId.ToString());
+
             var votes = new List<VoteOptionsDto>();
             var votesQuery = votesClient.QueryAsync<VoteTableEntity>($"{nameof(VoteTableEntity.PartitionKey)} eq '{payload.PollId}'");
             log.LogInformation("Querying votes for poll {pollId} to process votes summary", payload.PollId);
@@ -59,7 +62,7 @@ public class ChartCalculationProcessor
 
             var votesSummary = votes.GroupBy(v => v.OptionId)
                 .Select((vc) => new VoteOptionsDto
-                    {OptionId = vc.Key, Votes = vc.Sum(vq => vq.Votes)})
+                { OptionId = vc.Key, Votes = vc.Sum(vq => vq.Votes) })
                 .ToList();
 
             log.LogInformation("Processed a summary of votes for poll {pollId}: {summary}", payload.PollId, votesSummary);

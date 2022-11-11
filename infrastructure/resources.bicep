@@ -51,7 +51,6 @@ module queuesModule 'ServiceBus/namespaces/queues.bicep' = {
   scope: resourceGroup(integrationResourceGroupName)
   params: {
     serviceBusName: serviceBusResourceName
-    location: location
     queues: queues
   }
 }

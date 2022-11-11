@@ -35,8 +35,8 @@ namespace PollStar.Votes.Functions.Functions
             }
             else
             {
-                Activity.Current?.AddBaggage("PollId", payload.PollId.ToString());
-                Activity.Current?.AddBaggage("UserId", payload.UserId.ToString());
+                Activity.Current?.AddTag("PollId", payload.PollId.ToString());
+                Activity.Current?.AddTag("UserId", payload.UserId.ToString());
 
                 log.LogInformation("Received vote for poll {pollId} for processing", payload.PollId);
 
