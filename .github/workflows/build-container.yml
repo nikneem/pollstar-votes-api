@@ -51,10 +51,30 @@ jobs:
           docker push ${{ secrets.ACR_LOGIN_SERVER }}/$IMAGE_NAME:latest
       - name: Build & Push Job
         run: |
-          docker build . --file ./PollStar.Votes.ProcessJob/Dockerfile --tag ${{ secrets.ACR_LOGIN_SERVER }}/JOB_IMAGE_NAME:${{needs.versionize.outputs.semver}}
-          docker build . --file ./PollStar.Votes.ProcessJob/Dockerfile --tag ${{ secrets.ACR_LOGIN_SERVER }}/JOB_IMAGE_NAME:latest
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/JOB_IMAGE_NAME:${{needs.versionize.outputs.semver}}
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/JOB_IMAGE_NAME:latest
+          docker build . --file ./PollStar.Votes.ProcessJob/Dockerfile --tag ${{ secrets.ACR_LOGIN_SERVER }}/$JOB_IMAGE_NAME:${{needs.versionize.outputs.semver}}
+          docker build . --file ./PollStar.Votes.ProcessJob/Dockerfile --tag ${{ secrets.ACR_LOGIN_SERVER }}/$JOB_IMAGE_NAME:latest
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/$JOB_IMAGE_NAME:${{needs.versionize.outputs.semver}}
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/$JOB_IMAGE_NAME:latest
+
+  build-job:
+    needs: [versionize]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: "Push to Azure Container Registry"
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+      - name: Build & Push Job
+        run: |
+          docker build . --file ./PollStar.Votes.ProcessJob/Dockerfile --tag ${{ secrets.ACR_LOGIN_SERVER }}/$JOB_IMAGE_NAME:${{needs.versionize.outputs.semver}}
+          docker build . --file ./PollStar.Votes.ProcessJob/Dockerfile --tag ${{ secrets.ACR_LOGIN_SERVER }}/$JOB_IMAGE_NAME:latest
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/$JOB_IMAGE_NAME:${{needs.versionize.outputs.semver}}
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/$JOB_IMAGE_NAME:latest
 
   build-func:
     needs: [versionize]
@@ -92,7 +112,7 @@ jobs:
           path: infrastructure/*.json
 
   infrastructure-incremental-test:
-    needs: [build, build-func, publish-bicep, versionize]
+    needs: [build, build-func, build-job, publish-bicep, versionize]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
