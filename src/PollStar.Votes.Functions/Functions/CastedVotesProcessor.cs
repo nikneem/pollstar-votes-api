@@ -11,8 +11,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using PollStar.Charts.Api;
 using PollStar.Core.ExtensionMethods;
+using PollStar.Votes.Abstractions.Commands;
 using PollStar.Votes.Abstractions.DataTransferObjects;
-using PollStar.Votes.Functions.Commands;
 using PollStar.Votes.Repositories.Entities;
 
 namespace PollStar.Votes.Functions.Functions

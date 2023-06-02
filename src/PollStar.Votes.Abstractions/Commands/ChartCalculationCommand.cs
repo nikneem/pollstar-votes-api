@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PollStar.Votes.Functions.Commands
+﻿namespace PollStar.Votes.Abstractions.Commands
 {
     public class ChartCalculationCommand
     {

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "PollStar.Votes.ProcessJob": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}

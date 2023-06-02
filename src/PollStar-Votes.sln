@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PollStar.Votes.Abstractions
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PollStar.Votes.Api", "PollStar.Votes.Api\PollStar.Votes.Api.csproj", "{2C9C1DE6-D59D-4257-BFF5-77B202D192BF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PollStar.Votes.Functions", "PollStar.Votes.Functions\PollStar.Votes.Functions.csproj", "{5F6D303B-E8FE-421E-ABDA-40FC284B1C77}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PollStar.Votes.Functions", "PollStar.Votes.Functions\PollStar.Votes.Functions.csproj", "{5F6D303B-E8FE-421E-ABDA-40FC284B1C77}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PollStar.Votes.ProcessJob", "PollStar.Votes.ProcessJob\PollStar.Votes.ProcessJob.csproj", "{A94F13BD-DCA8-4E32-A6C1-5D23790E9F66}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{5F6D303B-E8FE-421E-ABDA-40FC284B1C77}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F6D303B-E8FE-421E-ABDA-40FC284B1C77}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5F6D303B-E8FE-421E-ABDA-40FC284B1C77}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A94F13BD-DCA8-4E32-A6C1-5D23790E9F66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A94F13BD-DCA8-4E32-A6C1-5D23790E9F66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A94F13BD-DCA8-4E32-A6C1-5D23790E9F66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A94F13BD-DCA8-4E32-A6C1-5D23790E9F66}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
