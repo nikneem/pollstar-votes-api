@@ -1,22 +1,10 @@
-#See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
-FROM mcr.microsoft.com/dotnet/runtime:7.0 AS base
+FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine as build
 WORKDIR /app
-
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
-WORKDIR /src
-COPY ["PollStar.Votes.ProcessJob/PollStar.Votes.ProcessJob.csproj", "PollStar.Votes.ProcessJob/"]
-COPY ["PollStar.Votes.Abstractions/PollStar.Votes.Abstractions.csproj", "PollStar.Votes.Abstractions/"]
-COPY ["PollStar.Votes/PollStar.Votes.csproj", "PollStar.Votes/"]
-RUN dotnet restore "PollStar.Votes.ProcessJob/PollStar.Votes.ProcessJob.csproj"
 COPY . .
-WORKDIR "/src/PollStar.Votes.ProcessJob"
-RUN dotnet build "PollStar.Votes.ProcessJob.csproj" -c Release -o /app/build
+RUN dotnet restore
+RUN dotnet publish -o /app/published-app
 
-FROM build AS publish
-RUN dotnet publish "PollStar.Votes.ProcessJob.csproj" -c Release -o /app/publish /p:UseAppHost=false
-
-FROM base AS final
+FROM mcr.microsoft.com/dotnet/aspnet:7.0-alpine as runtime
 WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "PollStar.Votes.ProcessJob.dll"]
+COPY --from=build /app/published-app /app
+ENTRYPOINT [ "dotnet", "/app/PollStar.Votes.Api.dll" ]
