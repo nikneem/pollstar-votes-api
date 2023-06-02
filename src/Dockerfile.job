@@ -7,7 +7,6 @@ FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
 COPY ["PollStar.Votes.ProcessJob/PollStar.Votes.ProcessJob.csproj", "PollStar.Votes.ProcessJob/"]
 COPY ["PollStar.Votes.Abstractions/PollStar.Votes.Abstractions.csproj", "PollStar.Votes.Abstractions/"]
-COPY ["PollStar.Votes.Functions/PollStar.Votes.Functions.csproj", "PollStar.Votes.Functions/"]
 COPY ["PollStar.Votes/PollStar.Votes.csproj", "PollStar.Votes/"]
 RUN dotnet restore "PollStar.Votes.ProcessJob/PollStar.Votes.ProcessJob.csproj"
 COPY . .

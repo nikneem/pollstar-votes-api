@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PollStar.Votes.Abstractions\PollStar.Votes.Abstractions.csproj" />
-    <ProjectReference Include="..\PollStar.Votes.Functions\PollStar.Votes.Functions.csproj" />
     <ProjectReference Include="..\PollStar.Votes\PollStar.Votes.csproj" />
   </ItemGroup>
 

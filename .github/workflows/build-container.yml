@@ -49,12 +49,6 @@ jobs:
           docker build . --file Dockerfile --tag ${{ secrets.ACR_LOGIN_SERVER }}/$IMAGE_NAME:latest
           docker push ${{ secrets.ACR_LOGIN_SERVER }}/$IMAGE_NAME:${{needs.versionize.outputs.semver}}
           docker push ${{ secrets.ACR_LOGIN_SERVER }}/$IMAGE_NAME:latest
-      - name: Build & Push Job
-        run: |
-          docker build . --file ./PollStar.Votes.ProcessJob/Dockerfile --tag ${{ secrets.ACR_LOGIN_SERVER }}/$JOB_IMAGE_NAME:${{needs.versionize.outputs.semver}}
-          docker build . --file ./PollStar.Votes.ProcessJob/Dockerfile --tag ${{ secrets.ACR_LOGIN_SERVER }}/$JOB_IMAGE_NAME:latest
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/$JOB_IMAGE_NAME:${{needs.versionize.outputs.semver}}
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/$JOB_IMAGE_NAME:latest
 
   build-job:
     needs: [versionize]
