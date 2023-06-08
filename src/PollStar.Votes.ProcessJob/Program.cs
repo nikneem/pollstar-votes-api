@@ -13,11 +13,10 @@ using PollStar.Votes.Repositories.Entities;
 const string sourceQueueName = "votes";
 const string targetQueueName = "charts";
 
-const string storageAccountname = "charts";
 const string storageTableName= "votes";
 
 
-async Task Main()
+async static Task Main()
 {
     var identity = new ChainedTokenCredential(
         new ManagedIdentityCredential(),
@@ -26,6 +25,7 @@ async Task Main()
         new AzureCliCredential());
 
     var serviceBusConnectionString = Environment.GetEnvironmentVariable("ServiceBusConnection");
+    var storageAccountConnection = Environment.GetEnvironmentVariable("StorageAccountConnection");
 
     var serviceBusClient = new ServiceBusClient(serviceBusConnectionString);
     var receiver = serviceBusClient.CreateReceiver(sourceQueueName);
@@ -51,7 +51,7 @@ async Task Main()
                 ETag = ETag.All
             };
 
-            var client = new TableClient(new Uri(storageAccountname), storageTableName, identity);
+            var client = new TableClient(storageAccountConnection, storageTableName);
             await client.UpsertEntityAsync(voteEntity);
 
             var calcCommand = new ChartCalculationCommand
@@ -63,7 +63,5 @@ async Task Main()
             await sender.SendMessageAsync(calcCommand);
             await receiver.CompleteMessageAsync(receivedMessage);
         }
-
     }
-
 }
