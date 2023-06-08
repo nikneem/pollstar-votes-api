@@ -65,3 +65,5 @@ async static Task Main()
         }
     }
 }
+
+await Main();
