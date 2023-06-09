@@ -13,16 +13,19 @@ using PollStar.Votes.Repositories.Entities;
 const string sourceQueueName = "votes";
 const string targetQueueName = "charts";
 
-const string storageTableName= "votes";
+const string storageTableName = "votes";
 
 
 async static Task Main()
 {
-    var identity = new ChainedTokenCredential(
-        new ManagedIdentityCredential(),
-        new VisualStudioCredential(),
-        new VisualStudioCodeCredential(),
-        new AzureCliCredential());
+
+    Console.WriteLine("Starting the process job");
+
+    // var identity = new ChainedTokenCredential(
+    //     new ManagedIdentityCredential(),
+    //     new VisualStudioCredential(),
+    //     new VisualStudioCodeCredential(),
+    //     new AzureCliCredential());
 
     var serviceBusConnectionString = Environment.GetEnvironmentVariable("ServiceBusConnection");
     var storageAccountConnection = Environment.GetEnvironmentVariable("StorageAccountConnection");
@@ -31,14 +34,18 @@ async static Task Main()
     var receiver = serviceBusClient.CreateReceiver(sourceQueueName);
     var sender = serviceBusClient.CreateSender(targetQueueName);
 
+    Console.WriteLine("Receiving message from service bus");
     var receivedMessage = await receiver.ReceiveMessageAsync();
 
     if (receivedMessage != null)
     {
+        Console.WriteLine("Got a message from the service bus");
         var payloadString = Encoding.UTF8.GetString(receivedMessage.Body);
         var payload = JsonConvert.DeserializeObject<CastVoteDto>(payloadString);
         if (payload != null)
         {
+            Console.WriteLine("Deserialized to a descent payload");
+
             Activity.Current?.AddTag("PollId", payload.PollId.ToString());
             Activity.Current?.AddTag("UserId", payload.UserId.ToString());
 
@@ -51,7 +58,9 @@ async static Task Main()
                 ETag = ETag.All
             };
 
+            Console.WriteLine("Created entity instance");
             var client = new TableClient(storageAccountConnection, storageTableName);
+            Console.WriteLine("Saving entity in table storage");
             await client.UpsertEntityAsync(voteEntity);
 
             var calcCommand = new ChartCalculationCommand
@@ -59,9 +68,14 @@ async static Task Main()
                 PollId = payload.PollId,
                 SessionId = payload.SessionId
             }.ToServiceBusMessage();
+            Console.WriteLine("Constructed service bus command");
 
+
+            Console.WriteLine("Sending message to chart calculation queue");
             await sender.SendMessageAsync(calcCommand);
+            Console.WriteLine("Completing original message in service bus");
             await receiver.CompleteMessageAsync(receivedMessage);
+            Console.WriteLine("All good, process complete");
         }
     }
 }
