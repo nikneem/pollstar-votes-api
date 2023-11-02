@@ -7,7 +7,6 @@ on:
 env:
   IMAGE_NAME: pollstar-votes-api
   FUNCTION_IMAGE_NAME: pollstar-votes-func
-  JOB_IMAGE_NAME: pollstar-votes-job
 
 jobs:
   versionize:
@@ -47,12 +46,8 @@ jobs:
         run: |
           docker build . --file Dockerfile --tag ${{ secrets.ACR_LOGIN_SERVER }}/$IMAGE_NAME:${{needs.versionize.outputs.semver}}
           docker build . --file Dockerfile --tag ${{ secrets.ACR_LOGIN_SERVER }}/$IMAGE_NAME:latest
-          docker build . --file Dockerfile.aca --tag ${{ secrets.ACR_LOGIN_SERVER }}/$JOB_IMAGE_NAME:${{needs.versionize.outputs.semver}}
-          docker build . --file Dockerfile.aca --tag ${{ secrets.ACR_LOGIN_SERVER }}/$JOB_IMAGE_NAME:latest
           docker push ${{ secrets.ACR_LOGIN_SERVER }}/$IMAGE_NAME:${{needs.versionize.outputs.semver}}
           docker push ${{ secrets.ACR_LOGIN_SERVER }}/$IMAGE_NAME:latest
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/$JOB_IMAGE_NAME:${{needs.versionize.outputs.semver}}
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/$JOB_IMAGE_NAME:latest
 
   build-func:
     needs: [versionize]

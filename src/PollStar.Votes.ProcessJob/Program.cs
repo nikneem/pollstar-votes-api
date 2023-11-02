@@ -77,6 +77,10 @@ async static Task Main()
             await receiver.CompleteMessageAsync(receivedMessage);
             Console.WriteLine("All good, process complete");
         }
+        else
+        {
+            Console.WriteLine("No service bus message received, terminating container");
+        }
     }
 }
 
